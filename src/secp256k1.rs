@@ -79,7 +79,7 @@ impl Ecdsa for Secp256k1KeyPair {
         match payload {
             Payload::Buffer(payload) => {
                 let message = Message::parse(&get_hash(&payload));
-                let signature = Signature::parse_standard_slice(&signature).expect("Couldn't parse signature");
+                let signature = Signature::parse_standard_slice(&signature)?;
 
                 verified = libsecp256k1::verify(&message, &signature, &self.public_key);
             }
@@ -174,7 +174,18 @@ impl From<Secp256k1KeyPair> for KeyPair {
     }
 }
 
-fn get_hash(payload: &Vec<u8>) -> [u8; 32] {
+impl From<libsecp256k1::Error> for Error {
+    fn from(err: libsecp256k1::Error) -> Self {
+        match err {
+            libsecp256k1::Error::InvalidSignature => Self::SignatureError,
+            libsecp256k1::Error::InvalidPublicKey => Self::InvalidKey,
+            libsecp256k1::Error::InvalidSecretKey => Self::InvalidKey,
+            _ => Self::Unknown(format!("{}", err)),
+        }
+    }
+}
+
+fn get_hash(payload: &[u8]) -> [u8; 32] {
     let hash = Sha256::digest(&payload);
     let mut output = [0u8; 32];
     output.copy_from_slice(&hash[..32]);
