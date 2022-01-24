@@ -378,10 +378,129 @@ pub mod test {
     }
 
     #[test]
-    fn test_key_resolve() {
-        let key = resolve("did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL").unwrap();
+    fn test_key_resolve_ed25519() {
+        for did_key_value in [
+            "did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL",
+            // Test vectors from https://w3c-ccg.github.io/did-method-key/#ed25519-x25519
+            "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+            "did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG",
+            "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+        ] {
+            let key = resolve(did_key_value).unwrap();
+            assert!(matches!(key, KeyPair::Ed25519(_)));
+        }
+    }
 
-        assert!(matches!(key, KeyPair::Ed25519(_)));
+    #[test]
+    fn test_key_generate_and_resolve_ed25519() {
+        for _ in 0..100 {
+            let key_pair = generate::<Ed25519KeyPair>(None);
+            let did_key_value = format!("did:key:{}", key_pair.fingerprint().clone());
+            let resolved_key_pair = resolve(&did_key_value).unwrap();
+            assert!(matches!(resolved_key_pair, KeyPair::Ed25519(_)));
+            // Check the public key portion only, since resolved_key_pair should only contain public key.
+            assert_eq!(resolved_key_pair.public_key_bytes(), key_pair.public_key_bytes());
+        }
+    }
+
+    #[test]
+    fn test_key_resolve_x25519() {
+        for did_key_value in [
+            // Test vectors from https://w3c-ccg.github.io/did-method-key/#x25519
+            "did:key:z6LSeu9HkTHSfLLeUs2nnzUSNedgDUevfNQgQjQC23ZCit6F",
+            "did:key:z6LStiZsmxiK4odS4Sb6JmdRFuJ6e1SYP157gtiCyJKfrYha",
+            "did:key:z6LSoMdmJz2Djah2P4L9taDmtqeJ6wwd2HhKZvNToBmvaczQ",
+        ] {
+            let key = resolve(did_key_value).unwrap();
+            assert!(matches!(key, KeyPair::X25519(_)));
+        }
+    }
+
+    #[test]
+    fn test_key_generate_and_resolve_x25519() {
+        for _ in 0..100 {
+            let key_pair = generate::<X25519KeyPair>(None);
+            let did_key_value = format!("did:key:{}", key_pair.fingerprint().clone());
+            let resolved_key_pair = resolve(&did_key_value).unwrap();
+            assert!(matches!(resolved_key_pair, KeyPair::X25519(_)));
+            // Check the public key portion only, since resolved_key_pair should only contain public key.
+            assert_eq!(resolved_key_pair.public_key_bytes(), key_pair.public_key_bytes());
+        }
+    }
+
+    #[test]
+    fn test_key_resolve_p256() {
+        for did_key_value in [
+            // Test vectors from https://w3c-ccg.github.io/did-method-key/#p-256
+            "did:key:zDnaerDaTF5BXEavCrfRZEk316dpbLsfPDZ3WJ5hRTPFU2169",
+            "did:key:zDnaerx9CtbPJ1q36T5Ln5wYt3MQYeGRG5ehnPAmxcf5mDZpv",
+        ] {
+            let key = resolve(did_key_value).unwrap();
+            assert!(matches!(key, KeyPair::P256(_)));
+        }
+    }
+
+    #[test]
+    fn test_key_generate_and_resolve_p256() {
+        for _ in 0..100 {
+            let key_pair = generate::<P256KeyPair>(None);
+            let did_key_value = format!("did:key:{}", key_pair.fingerprint().clone());
+            let resolved_key_pair = resolve(&did_key_value).unwrap();
+            assert!(matches!(resolved_key_pair, KeyPair::P256(_)));
+            // Check the public key portion only, since resolved_key_pair should only contain public key.
+            assert_eq!(resolved_key_pair.public_key_bytes(), key_pair.public_key_bytes());
+        }
+    }
+
+    #[test]
+    fn test_key_resolve_bls12381g1g2() {
+        // NOTE: These test vectors don't verify!
+
+        // for did_key_value in [
+        //     // Test vectors from https://w3c-ccg.github.io/did-method-key/#bls-12381
+        //     "did:key:zUC7K4ndUaGZgV7Cp2yJy6JtMoUHY6u7tkcSYUvPrEidqBmLCTLmi6d5WvwnUqejscAkERJ3bfjEiSYtdPkRSE8kSa11hFBr4sTgnbZ95SJj19PN2jdvJjyzpSZgxkyyxNnBNnY",
+        //     "did:key:zUC7KKoJk5ttwuuc8pmQDiUmtckEPTwcaFVZe4DSFV7fURuoRnD17D3xkBK3A9tZqdADkTTMKSwNkhjo9Hs6HfgNUXo48TNRaxU6XPLSPdRgMc15jCD5DfN34ixjoVemY62JxnW",
+        // ] {
+        //     let key = resolve(did_key_value).unwrap();
+        //     assert!(matches!(key, KeyPair::Bls12381G1G2(_)));
+        // }
+    }
+
+    #[test]
+    fn test_key_generate_and_resolve_bls12381g1g2() {
+        for _ in 0..100 {
+            let key_pair = generate::<Bls12381KeyPairs>(None);
+            let did_key_value = format!("did:key:{}", key_pair.fingerprint().clone());
+            let resolved_key_pair = resolve(&did_key_value).unwrap();
+            assert!(matches!(resolved_key_pair, KeyPair::Bls12381G1G2(_)));
+            // Check the public key portion only, since resolved_key_pair should only contain public key.
+            assert_eq!(resolved_key_pair.public_key_bytes(), key_pair.public_key_bytes());
+        }
+    }
+
+    #[test]
+    fn test_key_resolve_secp256k1() {
+        for did_key_value in [
+            // Test vectors from https://w3c-ccg.github.io/did-method-key/#secp256k1
+            "did:key:zQ3shokFTS3brHcDQrn82RUDfCZESWL1ZdCEJwekUDPQiYBme",
+            "did:key:zQ3shtxV1FrJfhqE1dvxYRcCknWNjHc3c5X1y3ZSoPDi2aur2",
+            "did:key:zQ3shZc2QzApp2oymGvQbzP8eKheVshBHbU4ZYjeXqwSKEn6N",
+        ] {
+            let key = resolve(did_key_value).unwrap();
+            assert!(matches!(key, KeyPair::Secp256k1(_)));
+        }
+    }
+
+    #[test]
+    fn test_key_generate_and_resolve_secp256k1() {
+        for _ in 0..100 {
+            let key_pair = generate::<Secp256k1KeyPair>(None);
+            let did_key_value = format!("did:key:{}", key_pair.fingerprint().clone());
+            let resolved_key_pair = resolve(&did_key_value).unwrap();
+            assert!(matches!(resolved_key_pair, KeyPair::Secp256k1(_)));
+            // Check the public key portion only, since resolved_key_pair should only contain public key.
+            assert_eq!(resolved_key_pair.public_key_bytes(), key_pair.public_key_bytes());
+        }
     }
 
     #[test]
