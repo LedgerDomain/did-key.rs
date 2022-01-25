@@ -180,7 +180,7 @@ impl TryFrom<&str> for KeyPair {
         return match pub_key[0..2] {
             [0xed, 0x1] => Ok(KeyPair::Ed25519(Ed25519KeyPair::from_public_key(&pub_key[2..]))),
             [0xec, 0x1] => Ok(KeyPair::X25519(X25519KeyPair::from_public_key(&pub_key[2..]))),
-            [0xee, 0x1] => Ok(KeyPair::Bls12381G1G2(Bls12381KeyPairs::from_public_key(&pub_key[2..]))),
+            [0xee, 0x1] => Ok(KeyPair::Bls12381G1G2(Bls12381KeyPair::from_public_key(&pub_key[2..]))),
             [0x80, 0x24] => Ok(KeyPair::P256(P256KeyPair::from_public_key(&pub_key[2..]))),
             [0xe7, 0x1] => Ok(KeyPair::Secp256k1(Secp256k1KeyPair::from_public_key(&pub_key[2..]))),
             _ => Err(Error::ResolutionFailed),
